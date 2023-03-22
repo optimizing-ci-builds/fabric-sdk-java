@@ -1,16 +1,6 @@
 name: Build
 
-on:
-  workflow_call:
-    inputs:
-      fabric-version:
-        default: '2.2'
-        required: false
-        type: string
-      checkout-ref:
-        default: ''
-        required: false
-        type: string
+on: [push]
 
 env:
   FABRIC_VERSION: ${{ inputs.fabric-version }}
@@ -37,4 +27,7 @@ jobs:
           distribution: temurin
           cache: maven
       - name: Integration tests
-        run: ./scripts/run-integration-tests.sh
+        run: |
+          ./scripts/run-integration-tests.sh
+          find -name "*.xml"
+

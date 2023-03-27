@@ -69,9 +69,9 @@ jobs:
       - name: Copy files to push to another directory
         if: steps.check_files.outputs.files_exists == 'true'
         run: |
-          mkdir -p fabric-sdk-java/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
-          cp -rvT optimizing-ci-builds-ci-analysis fabric-sdk-java/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
-      - run: echo https://github.com/UT-SE-Research/ci-analyzes/tree/1679956906-4d6beb9/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
+          mkdir -p fabric-sdk-java/fabric-sdk-java/.github/workflows/schedule/test_java-version_${{ matrix.java-version }}
+          cp -rvT optimizing-ci-builds-ci-analysis fabric-sdk-java/fabric-sdk-java/.github/workflows/schedule/test_java-version_${{ matrix.java-version }}
+      - run: echo https://github.com/UT-SE-Research/ci-analyzes/tree/1679956906-4d6beb9/fabric-sdk-java/.github/workflows/schedule/test_java-version_${{ matrix.java-version }}
       - name: Pushes analysis to another repository
         if: steps.check_files.outputs.files_exists == 'true'
         working-directory: fabric-sdk-java

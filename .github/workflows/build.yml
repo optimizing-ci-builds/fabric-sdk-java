@@ -1,12 +1,6 @@
 name: Build
 
-on:
-  push:
-    branches:
-      - release-2.2
-  pull_request:
-    branches:
-      - release-2.2
+on: [push]
 
 env:
   FABRIC_VERSION: "2.2"
@@ -23,12 +17,68 @@ jobs:
           - "11"
           - "17"
     steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas
+          pip install numpy
+      - run: sudo apt update
+      - run: sudo apt install inotify-tools
+      - run: inotifywait -mr /home/runner/work/fabric-sdk-java/fabric-sdk-java/ --format '%T;%w;%f;%e' --timefmt %T -o /home/runner/inotify-logs.csv & echo 'optimizing-ci-builds'
+      - run: touch starting_test_uses-checkout_26
+      - run: rm starting_test_uses-checkout_26
       - uses: actions/checkout@v3
+      - run: touch starting_test_SetupJDKmatrixjavaversion_27
+      - run: rm starting_test_SetupJDKmatrixjavaversion_27
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java-version }}
           distribution: temurin
           cache: maven
+      - run: touch starting_test_Integrationtests_33
+      - run: rm starting_test_Integrationtests_33
       - name: Integration tests
         run: ./scripts/run-integration-tests.sh
+      - run: touch starting_finished_finished_8979874
+        if: always()
+      - run: rm starting_finished_finished_8979874
+        if: always()
+      - name: Check script file exists and execute
+        if: always()
+        run: |
+          [ -f .github/workflows/script.py ] && python .github/workflows/script.py
+          [ -f /home/runner/work/fabric-sdk-java/fabric-sdk-java/optimizing-ci-builds-ci-analysis/job.csv ] || mkdir -p /home/runner/work/fabric-sdk-java/fabric-sdk-java/optimizing-ci-builds-ci-analysis/; echo "${GITHUB_RUN_ID},${GITHUB_JOB},${GITHUB_REPOSITORY},${GITHUB_WORKFLOW}" > /home/runner/work/fabric-sdk-java/fabric-sdk-java/optimizing-ci-builds-ci-analysis/job.csv
+      - name: Checkout to destination CI-analyzes repo
+        uses: actions/checkout@v3
+        if: always()
+        with:
+          path: fabric-sdk-java
+          ref: '1680123861-4d6beb9'
+          repository: 'UT-SE-Research/ci-analyzes'
+          token: '${{ secrets.API_TOKEN_GITHUB }}'
+          persist-credentials: true
+      - name: Copy files to push to another directory
+        if: always()
+        run: |
+          mkdir -p fabric-sdk-java/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
+          cp -rvT optimizing-ci-builds-ci-analysis fabric-sdk-java/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
+      - run: echo https://github.com/UT-SE-Research/ci-analyzes/tree/1680123861-4d6beb9/fabric-sdk-java/.github/workflows/build/test_java-version_${{ matrix.java-version }}
+      - name: rat check
+        if: always()
+        run: cat /home/runner/work/fabric-sdk-java/fabric-sdk-java/target/rat.txt
+      - name: Pushes analysis to another repository
+        if: always()
+        run: |
+          commit_message=$GITHUB_REPOSITORY@$GITHUB_WORKFLOW_SHA
+          git config --global user.name 'UT-SE-Research'
+          git config --global user.email '${{ secrets.EMAIL }}'
+          git add .
+          git commit -m $commit_message
+          while ! git push origin 1680123861-4d6beb9; do
+            git pull --rebase origin 1680123861-4d6beb9
+            sleep $((RANDOM % 5 + 1))
+          done
